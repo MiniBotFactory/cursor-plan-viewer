@@ -551,88 +551,6 @@
         .content-body td { padding: 12px 16px; border-bottom: 1px solid var(--border-color); }
         .content-body tr:hover td { background: rgba(88, 166, 255, 0.03); }
 
-        /* Feedback Panel */
-        .feedback-panel { display: none; }
-
-        .main-container.active ~ .feedback-panel { display: block; }
-
-        .feedback-btn {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 20px rgba(163, 113, 247, 0.4);
-            z-index: 200;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .feedback-btn:hover { transform: scale(1.1); }
-
-        .feedback-modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.7);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 300;
-            backdrop-filter: blur(4px);
-        }
-
-        .feedback-modal.active { display: flex; }
-
-        .feedback-box {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 32px;
-            width: 90%;
-            max-width: 500px;
-        }
-
-        .feedback-title { font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 600; margin-bottom: 8px; }
-        .feedback-subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
-
-        .feedback-textarea {
-            width: 100%;
-            height: 150px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 16px;
-            color: var(--text-primary);
-            font-size: 14px;
-            font-family: inherit;
-            resize: none;
-            margin-bottom: 16px;
-        }
-
-        .feedback-textarea:focus { outline: none; border-color: var(--accent-blue); }
-
-        .feedback-actions { display: flex; gap: 12px; justify-content: flex-end; }
-
-        .feedback-success { text-align: center; padding: 40px; }
-        .feedback-success-icon {
-            width: 64px;
-            height: 64px;
-            margin: 0 auto 20px;
-            background: rgba(63, 185, 80, 0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-        }
-
         /* Responsive */
         @media (max-width: 768px) {
             .upload-options { flex-direction: column; }
@@ -641,6 +559,186 @@
             .main-container { flex-direction: column; }
             .content-area { padding: 20px; }
         }
+
+        /* ======= 划词注释功能样式 ======= */
+        .annotate-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-orange), #e08a1e);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 200;
+            box-shadow: 0 4px 20px rgba(210, 153, 34, 0.4);
+        }
+        .annotate-btn:hover { transform: scale(1.1); }
+        .annotate-popup {
+            display: none;
+            position: absolute;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            width: 320px;
+            z-index: 300;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        .annotate-popup.show { display: block; }
+        .annotate-popup-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+        .annotate-popup-selected {
+            font-size: 12px;
+            color: var(--text-muted);
+            background: var(--bg-tertiary);
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            max-height: 60px;
+            overflow-y: auto;
+            word-break: break-word;
+        }
+        .annotate-textarea {
+            width: 100%;
+            height: 80px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 8px;
+            color: var(--text-primary);
+            font-size: 13px;
+            resize: none;
+            margin-bottom: 12px;
+        }
+        .annotate-textarea:focus { outline: none; border-color: var(--accent-blue); }
+        .annotate-actions { display: flex; gap: 8px; justify-content: flex-end; }
+        
+        /* ======= 意见面板 ======= */
+        .comments-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border-color);
+            z-index: 250;
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .comments-panel.open { right: 0; }
+        .comments-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .comments-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .comments-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .comments-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+        .comment-item {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            margin-bottom: 12px;
+            border-left: 3px solid var(--accent-orange);
+        }
+        .comment-item.implemented { border-left-color: var(--accent-green); }
+        .comment-file {
+            font-size: 12px;
+            color: var(--accent-blue);
+            margin-bottom: 4px;
+        }
+        .comment-selected {
+            font-size: 12px;
+            color: var(--text-muted);
+            background: var(--bg-primary);
+            padding: 6px 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+        .comment-text {
+            font-size: 13px;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            white-space: pre-wrap;
+        }
+        .comment-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .comment-status {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        .comment-status.pending { background: rgba(210,153,34,0.2); color: var(--accent-orange); }
+        .comment-status.implemented { background: rgba(63,185,80,0.2); color: var(--accent-green); }
+        .comment-actions { display: flex; gap: 8px; }
+        .comment-action-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            padding: 2px 4px;
+        }
+        .comment-action-btn:hover { color: var(--accent-blue); }
+        .comments-footer {
+            padding: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+        .copy-all-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--accent-orange), #e08a1e);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .copy-all-btn:hover { opacity: 0.9; }
+        .comments-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+        
+        /* 选中文字高亮 */
+        .highlighted-text {
+            background: rgba(210, 153, 34, 0.3);
+            border-radius: 2px;
+        }
+
     </style>
 </head>
 <body>
@@ -693,25 +791,7 @@
         </section>
     </main>
 
-    <div class="feedback-panel">
-        <button class="feedback-btn" id="feedback-btn" title="反馈建议">💬</button>
-    </div>
-
-    <div class="feedback-modal" id="feedback-modal">
-        <div class="feedback-box">
-            <div id="feedback-form">
-                <h3 class="feedback-title">💡 反馈建议</h3>
-                <p class="feedback-subtitle">对开发计划有疑问或建议？请告诉我们</p>
-                <textarea class="feedback-textarea" id="feedback-text" placeholder="请描述你的问题或建议..."></textarea>
-                <div class="feedback-actions">
-                    <button class="btn" id="feedback-cancel">取消</button>
-                    <button class="btn btn-primary" id="feedback-submit">提交反馈</button>
-                </div>
             </div>
-            <div class="feedback-success" id="feedback-success" style="display:none;">
-                <div class="feedback-success-icon">✅</div>
-                <h3 class="feedback-title">感谢反馈！</h3>
-                <p class="feedback-subtitle">你的建议已保存</p>
             </div>
         </div>
     </div>
@@ -721,7 +801,6 @@
         let allFiles = [];
         let fileCategories = {};
         let milestones = [];
-        let feedbackList = [];
 
         const uploadArea = document.getElementById('upload-area');
         const fileInput = document.getElementById('file-input');
@@ -733,13 +812,6 @@
         const navTabs = document.getElementById('nav-tabs');
         const homeBtn = document.getElementById('home-btn');
         const resetBtn = document.getElementById('reset-btn');
-        const feedbackBtn = document.getElementById('feedback-btn');
-        const feedbackModal = document.getElementById('feedback-modal');
-        const feedbackForm = document.getElementById('feedback-form');
-        const feedbackSuccess = document.getElementById('feedback-success');
-        const feedbackText = document.getElementById('feedback-text');
-        const feedbackCancel = document.getElementById('feedback-cancel');
-        const feedbackSubmit = document.getElementById('feedback-submit');
         const folderArea = document.getElementById('folder-area');
         const folderInput = document.getElementById('folder-input');
         const zipBtn = document.getElementById('zip-btn');
@@ -981,6 +1053,11 @@
                     <h1 class="content-title">${file.name} <span class="content-badge ${badgeClass}">${category}</span></h1>
                 </div>
                 <div class="content-body">${htmlContent}</div>`;
+            
+            currentFileName = file.name;
+            if (typeof window.updateContentHash === 'function') {
+                window.updateContentHash(file.content);
+            }
         }
 
         function getFileCategory(name) {
@@ -1044,29 +1121,161 @@
             fileInput.value = '';
         });
 
-        feedbackBtn.addEventListener('click', () => { feedbackModal.classList.add('active'); feedbackForm.style.display = 'block'; feedbackSuccess.style.display = 'none'; feedbackText.value = ''; });
-        feedbackCancel.addEventListener('click', () => feedbackModal.classList.remove('active'));
-        feedbackModal.addEventListener('click', e => { if (e.target === feedbackModal) feedbackModal.classList.remove('active'); });
-        feedbackSubmit.addEventListener('click', () => {
-            const text = feedbackText.value.trim();
-            if (text) {
-                feedbackList.push({ text, timestamp: new Date().toISOString() });
-                localStorage.setItem('cursor-plan-feedback', JSON.stringify(feedbackList));
-                feedbackForm.style.display = 'none';
-                feedbackSuccess.style.display = 'block';
-                setTimeout(() => feedbackModal.classList.remove('active'), 1500);
             }
         });
 
-        const saved = localStorage.getItem('cursor-plan-feedback');
-        if (saved) feedbackList = JSON.parse(saved);
 
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
                 if (mainContainer.classList.contains('active')) { uploadSection.style.display = 'flex'; mainContainer.classList.remove('active'); homeBtn.style.display = 'none'; resetBtn.style.display = 'none'; }
-                feedbackModal.classList.remove('active');
             }
         });
+
+        
+        // ======= 划词注释功能 =======
+        const annotateBtn = document.getElementById('annotate-btn');
+        const annotatePopup = document.getElementById('annotate-popup');
+        const annotatePopupSelected = document.getElementById('annotate-popup-selected');
+        const annotateTextarea = document.getElementById('annotate-textarea');
+        const annotateCancel = document.getElementById('annotate-cancel');
+        const annotateSave = document.getElementById('annotate-save');
+        const commentsPanel = document.getElementById('comments-panel');
+        const commentsList = document.getElementById('comments-list');
+        const commentsClose = document.getElementById('comments-close');
+        const copyAllBtn = document.getElementById('copy-all-btn');
+        
+        let currentSelection = null;
+        let currentFileName = '';
+        let comments = JSON.parse(localStorage.getItem('cursor-plan-comments') || '[]');
+        let currentContentHash = null;
+        
+        function computeHash(text) {
+            let hash = 0;
+            for (let i = 0; i < text.length; i++) {
+                const char = text.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString(16);
+        }
+        
+        function saveComments() {
+            localStorage.setItem('cursor-plan-comments', JSON.stringify(comments));
+            renderComments();
+        }
+        
+        function renderComments() {
+            if (comments.length === 0) {
+                commentsList.innerHTML = '<div class="comments-empty">暂无修改意见</div>';
+                return;
+            }
+            commentsList.innerHTML = comments.map((c, idx) => {
+                const isImplemented = c.contentHash && c.contentHash !== currentContentHash;
+                return `<div class="comment-item ${isImplemented ? 'implemented' : ''}">
+                    <div class="comment-file">📄 ${c.fileName || '未知文件'}</div>
+                    <div class="comment-selected">"${c.selectedText}"</div>
+                    <div class="comment-text">${c.text}</div>
+                    <div class="comment-meta">
+                        <span class="comment-status ${isImplemented ? 'implemented' : 'pending'}">${isImplemented ? '✓ 已落实' : '⏳ 待处理'}</span>
+                        <button class="comment-action-btn" onclick="deleteComment(${idx})">🗑️ 删除</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+        
+        window.deleteComment = function(idx) {
+            comments.splice(idx, 1);
+            saveComments();
+        };
+        
+        copyAllBtn.addEventListener('click', () => {
+            if (comments.length === 0) { alert('暂无修改意见'); return; }
+            let output = '# Cursor Plan 修改意见\n\n';
+            comments.forEach((c, idx) => {
+                output += `## 意见 ${idx + 1}\n- 文件: ${c.fileName || '未知'}\n- 原文: "${c.selectedText}"\n- 建议: ${c.text}\n- 状态: ${c.contentHash && c.contentHash !== currentContentHash ? '✓ 已落实' : '⏳ 待处理'}\n\n`;
+            });
+            navigator.clipboard.writeText(output).then(() => {
+                copyAllBtn.textContent = '✓ 已复制!';
+                setTimeout(() => copyAllBtn.textContent = '📋 一键复制给 Cursor', 2000);
+            });
+        });
+        
+        commentsClose.addEventListener('click', () => commentsPanel.classList.remove('open'));
+        annotateBtn.addEventListener('click', () => { commentsPanel.classList.toggle('open'); renderComments(); });
+        
+        document.addEventListener('mouseup', (e) => {
+            const selection = window.getSelection();
+            const selectedText = selection.toString().trim();
+            if (selectedText && selectedText.length > 0) {
+                currentSelection = { text: selectedText };
+                const rect = selection.getRangeAt(0).getBoundingClientRect();
+                annotatePopup.style.top = (rect.bottom + window.scrollY + 10) + 'px';
+                annotatePopup.style.left = rect.left + 'px';
+                annotatePopup.classList.add('show');
+                annotatePopupSelected.textContent = selectedText;
+                annotateTextarea.value = '';
+                annotateTextarea.focus();
+            }
+        });
+        
+        document.addEventListener('mousedown', (e) => {
+            if (!annotatePopup.contains(e.target) && e.target !== annotateBtn) {
+                annotatePopup.classList.remove('show');
+            }
+        });
+        
+        annotateCancel.addEventListener('click', () => { annotatePopup.classList.remove('show'); window.getSelection().removeAllRanges(); });
+        
+        annotateSave.addEventListener('click', () => {
+            const text = annotateTextarea.value.trim();
+            if (!text || !currentSelection) { alert('请输入改进意见'); return; }
+            const contentArea = document.getElementById('content-area');
+            const contentText = contentArea ? contentArea.textContent : '';
+            comments.push({
+                selectedText: currentSelection.text,
+                text: text,
+                fileName: currentFileName,
+                contentHash: computeHash(contentText),
+                timestamp: new Date().toISOString()
+            });
+            saveComments();
+            annotatePopup.classList.remove('show');
+            window.getSelection().removeAllRanges();
+            commentsPanel.classList.add('open');
+        });
+        
+        window.updateContentHash = function(text) {
+            currentContentHash = computeHash(text);
+            renderComments();
+        };
+        
+        renderComments();
+
     </script>
+
+    <!-- 划词注释功能 HTML -->
+    <button class="annotate-btn" id="annotate-btn">📝 添加意见</button>
+    <div class="annotate-popup" id="annotate-popup">
+        <div class="annotate-popup-title">添加改进意见</div>
+        <div class="annotate-popup-selected" id="annotate-popup-selected"></div>
+        <textarea class="annotate-textarea" id="annotate-textarea" placeholder="请输入你的改进意见..."></textarea>
+        <div class="annotate-actions">
+            <button class="btn" id="annotate-cancel">取消</button>
+            <button class="btn btn-primary" id="annotate-save">保存</button>
+        </div>
+    </div>
+
+    <!-- 意见面板 -->
+    <div class="comments-panel" id="comments-panel">
+        <div class="comments-header">
+            <span class="comments-title">📝 修改意见</span>
+            <button class="comments-close" id="comments-close">×</button>
+        </div>
+        <div class="comments-list" id="comments-list"></div>
+        <div class="comments-footer">
+            <button class="copy-all-btn" id="copy-all-btn">📋 一键复制给 Cursor</button>
+        </div>
+    </div>
+
 </body>
 </html>
