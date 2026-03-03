@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursor Plan Viewer</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --bg-hover: #30363d;
+            --border-color: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-orange: #d29922;
+            --accent-purple: #a371f7;
+            --accent-pink: #db61a2;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(88, 166, 255, 0.12), transparent),
+                radial-gradient(ellipse 60% 40% at 100% 100%, rgba(163, 113, 247, 0.08), transparent);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .header {
+            padding: 20px 32px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .logo-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .logo-text span { color: var(--accent-blue); }
+
+        .header-actions { display: flex; gap: 12px; }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue), #4090e0);
+            border: none;
+            color: white;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            padding: 80px 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 81px);
+        }
+
+        .upload-options {
+            display: flex;
+            align-items: stretch;
+            gap: 24px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .upload-area {
+            flex: 1;
+            max-width: 420px;
+            padding: 48px 32px;
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            background: var(--bg-secondary);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(88, 166, 255, 0.15);
+        }
+
+        .upload-icon {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 20px;
+            background: var(--bg-tertiary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .upload-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .upload-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .upload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            background: linear-gradient(135deg, var(--accent-blue), #4090e0);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .upload-btn:hover { transform: translateY(-2px); }
+
+        .upload-btn.secondary {
+            background: linear-gradient(135deg, var(--accent-purple), #9040d0);
+        }
+
+        .upload-divider {
+            display: flex;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        #file-input, #folder-input { display: none; }
+
+        /* Main Container */
+        .main-container {
+            display: none;
+            min-height: calc(100vh - 81px);
+        }
+
+        .main-container.active { display: flex; }
+
+        .sidebar {
+            width: 300px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 81px);
+            position: sticky;
+            top: 81px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .file-count {
+            font-size: 28px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .file-count span {
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--text-muted);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 4px;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+        }
+
+        .nav-tab:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .nav-tab.active { background: var(--accent-blue); color: white; }
+
+        .file-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .file-item {
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 2px 4px;
+        }
+
+        .file-item:hover { background: var(--bg-hover); }
+        .file-item.active { background: rgba(88, 166, 255, 0.12); }
+
+        .file-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .file-icon.task { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); }
+        .file-icon.plan { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); }
+        .file-icon.config { background: rgba(57, 197, 207, 0.15); color: var(--accent-cyan); }
+
+        .file-name {
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 32px 40px;
+            overflow-y: auto;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Dashboard */
+        .dashboard-header { margin-bottom: 40px; }
+
+        .dashboard-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 38px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .dashboard-subtitle { color: var(--text-secondary); font-size: 16px; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-label { font-size: 13px; color: var(--text-muted); }
+
+        .milestones-section { margin-bottom: 48px; }
+
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .milestone-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+        }
+
+        .milestone-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .milestone-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .milestone-card.m1::before { background: var(--accent-blue); }
+        .milestone-card.m2::before { background: var(--accent-green); }
+        .milestone-card.m3::before { background: var(--accent-purple); }
+        .milestone-card.m4::before { background: var(--accent-orange); }
+        .milestone-card.m5::before { background: var(--accent-pink); }
+
+        .milestone-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+
+        .milestone-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .milestone-badge {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+        }
+
+        .milestone-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
+
+        .milestone-tasks { display: flex; flex-wrap: wrap; gap: 6px; }
+
+        .task-tag {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .quick-links { display: flex; flex-wrap: wrap; gap: 12px; }
+
+        .quick-link {
+            padding: 10px 18px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .quick-link:hover { background: var(--bg-hover); color: var(--accent-blue); }
+
+        /* File Content */
+        .content-header {
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .content-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .content-badge {
+            font-size: 12px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .content-badge.milestone { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); }
+        .content-badge.task { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); }
+
+        .content-body { line-height: 1.75; font-size: 15px; color: var(--text-secondary); }
+
+        .content-body h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 40px 0 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .content-body h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 36px 0 16px;
+            position: relative;
+            padding-left: 16px;
+        }
+
+        .content-body h2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 60%;
+            background: linear-gradient(to bottom, var(--accent-blue), var(--accent-purple));
+            border-radius: 2px;
+        }
+
+        .content-body h3 { font-size: 17px; font-weight: 600; color: var(--text-primary); margin: 28px 0 12px; }
+        .content-body p { margin-bottom: 16px; }
+        .content-body ul, .content-body ol { margin-bottom: 16px; padding-left: 24px; }
+        .content-body li { margin-bottom: 8px; }
+        .content-body code {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-tertiary);
+            padding: 3px 10px;
+            border-radius: 5px;
+            font-size: 13px;
+            color: var(--accent-cyan);
+        }
+
+        .content-body pre {
+            background: #0d1117;
+            padding: 20px;
+            border-radius: var(--radius-md);
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .content-body pre code { background: none; padding: 0; color: var(--text-primary); }
+
+        .content-body blockquote {
+            border-left: 4px solid var(--accent-blue);
+            padding: 16px 20px;
+            margin: 20px 0;
+            background: rgba(88, 166, 255, 0.05);
+            color: var(--text-secondary);
+        }
+
+        .content-body strong { color: var(--text-primary); font-weight: 600; }
+        .content-body a { color: var(--accent-blue); text-decoration: none; }
+        .content-body a:hover { text-decoration: underline; }
+
+        .content-body table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+        .content-body th { background: var(--bg-tertiary); padding: 12px 16px; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border-color); }
+        .content-body td { padding: 12px 16px; border-bottom: 1px solid var(--border-color); }
+        .content-body tr:hover td { background: rgba(88, 166, 255, 0.03); }
+
+        /* Feedback Panel */
+        .feedback-panel { display: none; }
+
+        .main-container.active ~ .feedback-panel { display: block; }
+
+        .feedback-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(163, 113, 247, 0.4);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feedback-btn:hover { transform: scale(1.1); }
+
+        .feedback-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+            backdrop-filter: blur(4px);
+        }
+
+        .feedback-modal.active { display: flex; }
+
+        .feedback-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .feedback-title { font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+        .feedback-subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+
+        .feedback-textarea {
+            width: 100%;
+            height: 150px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            margin-bottom: 16px;
+        }
+
+        .feedback-textarea:focus { outline: none; border-color: var(--accent-blue); }
+
+        .feedback-actions { display: flex; gap: 12px; justify-content: flex-end; }
+
+        .feedback-success { text-align: center; padding: 40px; }
+        .feedback-success-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px;
+            background: rgba(63, 185, 80, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .upload-options { flex-direction: column; }
+            .upload-divider { padding: 8px 0; justify-content: center; }
+            .sidebar { width: 100%; max-height: 300px; }
+            .main-container { flex-direction: column; }
+            .content-area { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">📋</div>
+            <div class="logo-text">Cursor <span>Plan</span></div>
+        </div>
+        <div class="header-actions">
+            <button class="btn" id="home-btn" style="display:none;">
+                <span>🏠</span> 概览
+            </button>
+            <button class="btn" id="reset-btn" style="display:none;">
+                <span>📁</span> 重新上传
+            </button>
+        </div>
+    </header>
+
+    <section class="upload-section" id="upload-section">
+        <div class="upload-options">
+            <div class="upload-area" id="upload-area">
+                <div class="upload-icon">📦</div>
+                <h2 class="upload-title">上传 ZIP 文件</h2>
+                <p class="upload-subtitle">上传 Cursor Plan 导出的 ZIP 压缩包</p>
+                <button class="upload-btn" id="zip-btn">选择 ZIP 文件</button>
+                <input type="file" id="file-input" accept=".zip">
+            </div>
+            <div class="upload-divider">或</div>
+            <div class="upload-area" id="folder-area">
+                <div class="upload-icon">📂</div>
+                <h2 class="upload-title">选择本地目录</h2>
+                <p class="upload-subtitle">直接选择包含计划文件的目录</p>
+                <button class="upload-btn secondary" id="folder-btn">选择目录</button>
+                <input type="file" id="folder-input" webkitdirectory directory multiple>
+            </div>
+        </div>
+    </section>
+
+    <main class="main-container" id="main-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">文件导航</div>
+                <div class="file-count" id="file-count">0 <span>个文件</span></div>
+            </div>
+            <div class="nav-tabs" id="nav-tabs"></div>
+            <div class="file-list" id="file-list"></div>
+        </aside>
+        <section class="content-area">
+            <div class="content-wrapper" id="content-wrapper"></div>
+        </section>
+    </main>
+
+    <div class="feedback-panel">
+        <button class="feedback-btn" id="feedback-btn" title="反馈建议">💬</button>
+    </div>
+
+    <div class="feedback-modal" id="feedback-modal">
+        <div class="feedback-box">
+            <div id="feedback-form">
+                <h3 class="feedback-title">💡 反馈建议</h3>
+                <p class="feedback-subtitle">对开发计划有疑问或建议？请告诉我们</p>
+                <textarea class="feedback-textarea" id="feedback-text" placeholder="请描述你的问题或建议..."></textarea>
+                <div class="feedback-actions">
+                    <button class="btn" id="feedback-cancel">取消</button>
+                    <button class="btn btn-primary" id="feedback-submit">提交反馈</button>
+                </div>
+            </div>
+            <div class="feedback-success" id="feedback-success" style="display:none;">
+                <div class="feedback-success-icon">✅</div>
+                <h3 class="feedback-title">感谢反馈！</h3>
+                <p class="feedback-subtitle">你的建议已保存</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        let allFiles = [];
+        let fileCategories = {};
+        let milestones = [];
+        let feedbackList = [];
+
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        const uploadSection = document.getElementById('upload-section');
+        const mainContainer = document.getElementById('main-container');
+        const fileList = document.getElementById('file-list');
+        const fileCount = document.getElementById('file-count');
+        const contentWrapper = document.getElementById('content-wrapper');
+        const navTabs = document.getElementById('nav-tabs');
+        const homeBtn = document.getElementById('home-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const feedbackBtn = document.getElementById('feedback-btn');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const feedbackForm = document.getElementById('feedback-form');
+        const feedbackSuccess = document.getElementById('feedback-success');
+        const feedbackText = document.getElementById('feedback-text');
+        const feedbackCancel = document.getElementById('feedback-cancel');
+        const feedbackSubmit = document.getElementById('feedback-submit');
+        const folderArea = document.getElementById('folder-area');
+        const folderInput = document.getElementById('folder-input');
+        const zipBtn = document.getElementById('zip-btn');
+        const folderBtn = document.getElementById('folder-btn');
+
+        // Button click handlers
+        zipBtn?.addEventListener('click', () => fileInput.click());
+        folderBtn?.addEventListener('click', () => folderInput.click());
+
+        // Drag & drop for ZIP
+        uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+        uploadArea.addEventListener('drop', e => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file?.name.endsWith('.zip')) handleFile(file);
+        });
+
+        // Drag & drop for folder
+        folderArea.addEventListener('dragover', e => { e.preventDefault(); folderArea.classList.add('dragover'); });
+        folderArea.addEventListener('dragleave', () => folderArea.classList.remove('dragover'));
+        folderArea.addEventListener('drop', e => {
+            e.preventDefault();
+            folderArea.classList.remove('dragover');
+            alert('请使用"选择目录"按钮来选择文件夹');
+        });
+
+        // File input change
+        fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+        folderInput.addEventListener('change', e => { if (e.target.files[0]) handleFolder(e.target.files); });
+
+        async function handleFolder(fileListObj) {
+            try {
+                const files = [];
+                for (let i = 0; i < fileListObj.length; i++) {
+                    const file = fileListObj[i];
+                    if (file.name.endsWith('.md')) {
+                        const content = await file.text();
+                        let path = file.webkitRelativePath || file.name;
+                        if (path.includes('/')) path = path.split('/').slice(1).join('/');
+                        files.push({ name: file.name, content, path });
+                    }
+                }
+                if (files.length === 0) { alert('所选目录中没有找到 .md 文件'); return; }
+                
+                allFiles = files.sort((a, b) => a.name.localeCompare(b.name));
+                analyzeFiles();
+                showMainView();
+            } catch (error) { alert('读取目录失败: ' + error.message); }
+        }
+
+        async function handleFile(file) {
+            try {
+                const zip = await JSZip.loadAsync(file);
+                const files = [];
+                for (const [name, data] of Object.entries(zip.files)) {
+                    if (!name.endsWith('/')) {
+                        const content = await data.async('text');
+                        files.push({ name: name.replace('plans/', '').replace('plans\\', ''), content, path: name });
+                    }
+                }
+                allFiles = files.sort((a, b) => a.name.localeCompare(b.name));
+                analyzeFiles();
+                showMainView();
+            } catch (error) { alert('解压文件失败: ' + error.message); }
+        }
+
+        function showMainView() {
+            uploadSection.style.display = 'none';
+            mainContainer.classList.add('active');
+            homeBtn.style.display = 'flex';
+            resetBtn.style.display = 'flex';
+            renderNavTabs();
+            renderDashboard();
+        }
+
+        function analyzeFiles() {
+            fileCategories = { overview: [], tasks: [], config: [], execution: [] };
+            milestones = [];
+
+            allFiles.forEach(file => {
+                const name = file.name;
+                if (['PLAN.md', 'PLAN-CARDS.md', 'BACKLOG.md'].includes(name)) fileCategories.overview.push(file);
+                else if (['ENV.md', 'TEST-STRATEGY.md', 'AGENT-HANDOFF.md'].includes(name)) fileCategories.config.push(file);
+                else if (['EXECUTION-BATCHES.md', 'EXECUTION-LOG.md'].includes(name)) fileCategories.execution.push(file);
+                else if (name.startsWith('TASK-')) {
+                    fileCategories.tasks.push(file);
+                    const match = file.content.match(/## M(\d)[^:]*:/);
+                    if (match) {
+                        const m = parseInt(match[1]);
+                        if (!milestones.find(x => x.id === m)) milestones.push({ id: m, tasks: [] });
+                        milestones.find(x => x.id === m).tasks.push(name.replace('.md', ''));
+                    }
+                }
+            });
+
+            fileCategories.tasks.sort((a, b) => {
+                const aNum = parseInt(a.name.match(/TASK-(\d+)/)?.[1] || 0);
+                const bNum = parseInt(b.name.match(/TASK-(\d+)/)?.[1] || 0);
+                return aNum - bNum;
+            });
+        }
+
+        function renderNavTabs() {
+            const tabs = [
+                { id: 'overview', label: '概览', icon: '📊' },
+                { id: 'tasks', label: '任务', icon: '✅' },
+                { id: 'config', label: '配置', icon: '⚙️' },
+                { id: 'execution', label: '执行', icon: '🚀' }
+            ];
+            navTabs.innerHTML = tabs.map(t => `<button class="nav-tab" data-category="${t.id}">${t.icon} ${t.label}</button>`).join('');
+            navTabs.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    navTabs.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    showCategory(tab.dataset.category);
+                });
+            });
+            navTabs.querySelector('.nav-tab').classList.add('active');
+        }
+
+        function renderFileList() {
+            const activeTab = navTabs.querySelector('.nav-tab.active')?.dataset.category || 'overview';
+            let files = [];
+            switch(activeTab) {
+                case 'overview': files = fileCategories.overview; break;
+                case 'tasks': files = fileCategories.tasks; break;
+                case 'config': files = [...fileCategories.config, ...fileCategories.execution]; break;
+                case 'execution': files = fileCategories.execution; break;
+            }
+            if (files.length === 0) { fileList.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted)">暂无文件</div>'; return; }
+            fileCount.innerHTML = `${files.length} <span>个</span>`;
+            const icons = { overview: '📋', tasks: '✅', config: '⚙️', execution: '🚀' };
+            fileList.innerHTML = files.map(file => {
+                const iconType = getFileIconType(file.name);
+                return `<div class="file-item" data-filename="${file.name}">
+                    <div class="file-icon ${iconType}">${icons[activeTab] || '📄'}</div>
+                    <div class="file-name">${file.name}</div>
+                </div>`;
+            }).join('');
+            document.querySelectorAll('.file-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const file = allFiles.find(f => f.name === item.dataset.filename);
+                    if (file) { showFileContent(file); document.querySelectorAll('.file-item').forEach(i => i.classList.remove('active')); item.classList.add('active'); }
+                });
+            });
+        }
+
+        function getFileIconType(name) {
+            if (name.startsWith('TASK-')) return 'task';
+            if (['PLAN.md', 'PLAN-CARDS.md', 'BACKLOG.md'].includes(name)) return 'plan';
+            return 'config';
+        }
+
+        function showCategory(category) {
+            renderFileList();
+            contentWrapper.innerHTML = category === 'overview' ? '' : `<div class="content-header"><h1 class="content-title">${getCategoryTitle(category)}</h1></div><p style="color:var(--text-muted)">从左侧选择文件查看详情</p>`;
+            if (category === 'overview') renderDashboard();
+        }
+
+        function getCategoryTitle(c) {
+            const titles = { overview: '📋 项目概览', tasks: '✅ 开发任务', config: '⚙️ 配置文档', execution: '🚀 执行记录' };
+            return titles[c] || c;
+        }
+
+        function renderDashboard() {
+            const totalTasks = fileCategories.tasks.length;
+            const planCount = allFiles.filter(f => f.content.includes('PLAN-DONE')).length;
+            const executeCount = allFiles.filter(f => f.content.includes('EXECUTE-DONE')).length;
+            const milestoneInfo = [
+                { id: 1, name: '契约与规范', desc: '接口、模型、环境变量、测试策略', icon: '📜', class: 'm1' },
+                { id: 2, name: '多频道并发', desc: '核心调度、并发控制、幂等入库', icon: '🔄', class: 'm2' },
+                { id: 3, name: '媒体流水线', desc: '下载、转写、翻译、配音、合成', icon: '🎬', class: 'm3' },
+                { id: 4, name: 'API与可观测', desc: '用户接口、运维接口、健康检查', icon: '📡', class: 'm4' },
+                { id: 5, name: '质量与交付', desc: '测试、回归、CI门禁', icon: '🛡️', class: 'm5' }
+            ];
+
+            contentWrapper.innerHTML = `
+                <div class="dashboard-header">
+                    <h1 class="dashboard-title">🚀 开发计划总览</h1>
+                    <p class="dashboard-subtitle">共 ${totalTasks} 个任务，分布在 ${milestoneInfo.length} 个里程碑中</p>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-icon" style="background:rgba(88,166,255,0.15);color:var(--accent-blue)">📋</div><div class="stat-value">${totalTasks}</div><div class="stat-label">总任务数</div></div>
+                    <div class="stat-card"><div class="stat-icon" style="background:rgba(63,185,80,0.15);color:var(--accent-green)">✅</div><div class="stat-value">${executeCount}</div><div class="stat-label">已完成</div></div>
+                    <div class="stat-card"><div class="stat-icon" style="background:rgba(210,153,34,0.15);color:var(--accent-orange)">⏳</div><div class="stat-value">${planCount - executeCount}</div><div class="stat-label">计划阶段</div></div>
+                    <div class="stat-card"><div class="stat-icon" style="background:rgba(163,113,247,0.15);color:var(--accent-purple)">📊</div><div class="stat-value">${milestoneInfo.length}</div><div class="stat-label">里程碑</div></div>
+                </div>
+                <div class="milestones-section">
+                    <h2 class="section-title">📌 里程碑</h2>
+                    <div class="milestone-grid">
+                        ${milestoneInfo.map(m => {
+                            const mTasks = milestones.find(x => x.id === m.id)?.tasks || [];
+                            return `<div class="milestone-card ${m.class}" data-milestone="${m.id}">
+                                <div class="milestone-title">${m.icon} M${m.id}: ${m.name} <span class="milestone-badge">${mTasks.length} 任务</span></div>
+                                <p class="milestone-desc">${m.desc}</p>
+                                <div class="milestone-tasks">${mTasks.slice(0,6).map(t => `<span class="task-tag">${t}</span>`).join('')}${mTasks.length>6?`<span class="task-tag">+${mTasks.length-6}</span>`:''}</div>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>
+                <div class="milestones-section">
+                    <h2 class="section-title">⚡ 快速导航</h2>
+                    <div class="quick-links">
+                        ${fileCategories.overview.slice(0,4).map(f => `<div class="quick-link" data-file="${f.name}">📄 ${f.name}</div>`).join('')}
+                        ${fileCategories.config.slice(0,3).map(f => `<div class="quick-link" data-file="${f.name}">⚙️ ${f.name}</div>`).join('')}
+                    </div>
+                </div>`;
+
+            document.querySelectorAll('.milestone-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const mTasks = milestones.find(x => x.id === parseInt(card.dataset.milestone))?.tasks || [];
+                    if (mTasks.length > 0) {
+                        navTabs.querySelector('[data-category="tasks"]').click();
+                        const firstTask = fileCategories.tasks.find(t => t.name === mTasks[0] + '.md');
+                        if (firstTask) showFileContent(firstTask);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.quick-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    const file = allFiles.find(f => f.name === link.dataset.file);
+                    if (file) showFileContent(file);
+                });
+            });
+        }
+
+        function showFileContent(file) {
+            const htmlContent = renderMarkdown(file.content);
+            const category = getFileCategory(file.name);
+            let badgeClass = 'config';
+            if (file.name.startsWith('TASK-')) badgeClass = 'task';
+            else if (['PLAN.md', 'PLAN-CARDS.md', 'BACKLOG.md'].includes(file.name)) badgeClass = 'milestone';
+
+            contentWrapper.innerHTML = `
+                <div class="content-header">
+                    <h1 class="content-title">${file.name} <span class="content-badge ${badgeClass}">${category}</span></h1>
+                </div>
+                <div class="content-body">${htmlContent}</div>`;
+        }
+
+        function getFileCategory(name) {
+            if (name.startsWith('TASK-')) return '任务';
+            if (name === 'PLAN.md') return '总计划';
+            if (name === 'PLAN-CARDS.md') return '任务索引';
+            if (name === 'BACKLOG.md') return '待办清单';
+            if (name === 'EXECUTION-BATCHES.md') return '执行批次';
+            if (name === 'EXECUTION-LOG.md') return '执行日志';
+            if (name === 'ENV.md') return '环境配置';
+            if (name === 'TEST-STRATEGY.md') return '测试策略';
+            return '文档';
+        }
+
+        function renderMarkdown(content) {
+            let html = content.replace(/#^[A-Z]{2}\|/g, '');
+            html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+            html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+            html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+            html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+            html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+            html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+            html = html.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+            html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+            html = html.replace(/^---$/gm, '<hr>');
+            html = html.replace(/^\|(.+)\|$/gm, (match) => {
+                const cells = match.slice(1, -1).split('|').map(c => c.trim());
+                if (cells.every(c => c.match(/^-+$/))) return '<!--table-divider-->';
+                return '<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>';
+            });
+            html = html.replace(/(<tr>.+?<\/tr>)+/gs, '<table>$&</table>');
+            html = html.replace(/<!--table-divider-->\s*<table>/g, '<table>');
+            html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+            html = html.replace(/(<li>.+<\/li>\n?)+/g, '<ul>$&</ul>');
+            html = html.replace(/\n\n+/g, '</p><p>');
+            html = '<p>' + html + '</p>';
+            html = html.replace(/<p><\/p>/g, '');
+            html = html.replace(/<p>(<h[1-4]>)/g, '$1');
+            html = html.replace(/(<\/h[1-4]>)<\/p>/g, '$1');
+            html = html.replace(/<p>(<pre>)/g, '$1');
+            html = html.replace(/(<\/pre>)<\/p>/g, '$1');
+            html = html.replace(/<p>(<table>)/g, '$1');
+            html = html.replace(/(<\/table>)<\/p>/g, '$1');
+            html = html.replace(/<p>(<blockquote>)/g, '$1');
+            html = html.replace(/(<\/blockquote>)<\/p>/g, '$1');
+            html = html.replace(/<p>(<ul>)/g, '$1');
+            html = html.replace(/(<\/ul>)<\/p>/g, '$1');
+            html = html.replace(/<p>(<hr>)<\/p>/g, '$1');
+            return html;
+        }
+
+        // Event listeners
+        homeBtn.addEventListener('click', () => { renderDashboard(); document.querySelectorAll('.file-item').forEach(i => i.classList.remove('active')); });
+
+        resetBtn.addEventListener('click', () => {
+            uploadSection.style.display = 'flex';
+            mainContainer.classList.remove('active');
+            homeBtn.style.display = 'none';
+            resetBtn.style.display = 'none';
+            fileInput.value = '';
+        });
+
+        feedbackBtn.addEventListener('click', () => { feedbackModal.classList.add('active'); feedbackForm.style.display = 'block'; feedbackSuccess.style.display = 'none'; feedbackText.value = ''; });
+        feedbackCancel.addEventListener('click', () => feedbackModal.classList.remove('active'));
+        feedbackModal.addEventListener('click', e => { if (e.target === feedbackModal) feedbackModal.classList.remove('active'); });
+        feedbackSubmit.addEventListener('click', () => {
+            const text = feedbackText.value.trim();
+            if (text) {
+                feedbackList.push({ text, timestamp: new Date().toISOString() });
+                localStorage.setItem('cursor-plan-feedback', JSON.stringify(feedbackList));
+                feedbackForm.style.display = 'none';
+                feedbackSuccess.style.display = 'block';
+                setTimeout(() => feedbackModal.classList.remove('active'), 1500);
+            }
+        });
+
+        const saved = localStorage.getItem('cursor-plan-feedback');
+        if (saved) feedbackList = JSON.parse(saved);
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                if (mainContainer.classList.contains('active')) { uploadSection.style.display = 'flex'; mainContainer.classList.remove('active'); homeBtn.style.display = 'none'; resetBtn.style.display = 'none'; }
+                feedbackModal.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
